@@ -1,0 +1,10 @@
+apply from: "$rootDir/config/versions.gradle"
+
+ext {
+    Dependencies = [
+            Android: [
+                    appCompat: "androidx.appcompat:appcompat:${Versions.appCompat}",
+                    playServicesBase: "com.google.android.gms:play-services-base:${Versions.playServices}"
+            ],
+    ]
+}

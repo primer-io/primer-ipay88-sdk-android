@@ -1,0 +1,6 @@
+ext {
+    Versions = [
+            appCompat   : "1.3.0",
+            playServices: "17.6.0"
+    ]
+}

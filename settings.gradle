@@ -1,0 +1,2 @@
+rootProject.name = "primer-ipay88-sdk-android"
+include ':ipay88'
