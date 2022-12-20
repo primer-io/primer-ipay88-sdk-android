@@ -57,7 +57,9 @@ class NativeIPay88Activity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        startCheckout(getLauncherParams())
+        if (savedInstanceState == null) {
+            startCheckout(getLauncherParams())
+        }
     }
 
     private fun startCheckout(params: IPay88LauncherParams) {
