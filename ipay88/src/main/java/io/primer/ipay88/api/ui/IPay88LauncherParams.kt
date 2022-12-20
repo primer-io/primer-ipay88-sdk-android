@@ -4,6 +4,7 @@ import java.io.Serializable
 
 data class IPay88LauncherParams(
     val iPayPaymentId: String,
+    val iPayMethod: Int,
     val merchantCode: String,
     val amount: String,
     val referenceNumber: String,

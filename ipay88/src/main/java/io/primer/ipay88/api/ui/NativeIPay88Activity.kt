@@ -23,14 +23,19 @@ class NativeIPay88Activity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { activityResult ->
         when (activityResult.resultCode) {
-            RESULT_CANCELED -> setCancelledResult(IPayPaymentCancelledException())
+            RESULT_CANCELED -> {
+                setCancelledResult(IPayPaymentCancelledException())
+                finish()
+            }
             RESULT_OK -> {
                 when (val state = IPayStateHolder.currentState) {
                     is IPayPaymentState.Cancelled -> {
                         setCancelledResult(IPayPaymentCancelledException())
+                        finish()
                     }
                     is IPayPaymentState.ConnectionError -> {
                         setErrorResult(IPayConnectionErrorException())
+                        finish()
                     }
                     is IPayPaymentState.Failed -> {
                         setErrorResult(
@@ -40,19 +45,25 @@ class NativeIPay88Activity : AppCompatActivity() {
                                 state.errorDescription
                             )
                         )
+                        finish()
                     }
                     is IPayPaymentState.ReQuery -> {
                         reQuery(
                             intent.getSerializableExtra(INTENT_PARAMS_EXTRA_KEY) as IPay88LauncherParams
                         )
                     }
-                    is IPayPaymentState.Success -> setResult(RESULT_OK)
-                    else -> setErrorResult(IllegalStateException())
+                    is IPayPaymentState.Success -> {
+                        setResult(RESULT_OK)
+                        finish()
+                    }
+                    else -> {
+                        setErrorResult(IllegalStateException())
+                        finish()
+                    }
                 }
             }
-            else -> Unit
+            else -> finish()
         }
-        finish()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +79,7 @@ class NativeIPay88Activity : AppCompatActivity() {
                 params.toIPayIHPayment(),
                 this,
                 PrimerIPay88Delegate(),
-                IPayIH.PAY_METHOD_CREDIT_CARD
+                params.iPayMethod
             )
         )
     }
