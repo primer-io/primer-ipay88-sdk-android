@@ -18,7 +18,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             consumerProguardFiles 'consumer-rules.pro'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -31,14 +31,16 @@ android {
         jvmTarget = '1.8'
     }
 
+    sourceSets {
+        main.java.srcDirs += 'src/main/java'
+    }
+
     buildTypes.each {
         it.buildConfigField 'String', 'SDK_VERSION_STRING', "\"$VERSION_NAME\""
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     implementation Dependencies.Android.appCompat
-    implementation Dependencies.Android.playServicesBase
+    implementation Dependencies.iPay88.iPay88
 }

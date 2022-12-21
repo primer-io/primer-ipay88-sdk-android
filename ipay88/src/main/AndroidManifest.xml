@@ -1,7 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.primer.android.ipay88">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.primer.ipay88">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <application>
+        <activity
+            android:name="io.primer.ipay88.api.ui.NativeIPay88Activity"
+            android:exported="false"
+            android:label=""
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.AppCompat.NoActionBar.FullScreen.IPay" />
+
+        <activity
+            android:name="com.ipay.IPayIHActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            tools:ignore="AppLinkUrlError" />
+
+        <activity
+            android:name="com.ipay.IPayIHAcitivityR"
+            android:configChanges="orientation|screenSize" />
+    </application>
 
 </manifest>

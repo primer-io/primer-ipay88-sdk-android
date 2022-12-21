@@ -4,7 +4,9 @@ ext {
     Dependencies = [
             Android: [
                     appCompat: "androidx.appcompat:appcompat:${Versions.appCompat}",
-                    playServicesBase: "com.google.android.gms:play-services-base:${Versions.playServices}"
+            ],
+            iPay88 : [
+                    iPay88: "io.primer:ipay88:${Versions.iPay88Sdk}",
             ],
     ]
 }
