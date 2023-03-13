@@ -9,20 +9,32 @@
     <application>
         <activity
             android:name="io.primer.ipay88.api.ui.NativeIPay88Activity"
-            android:exported="false"
+            android:exported="true"
             android:label=""
-            android:launchMode="singleTop"
-            android:theme="@style/Theme.AppCompat.NoActionBar.FullScreen.IPay" />
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat.NoActionBar.FullScreen.IPay"
+            tools:ignore="AppLinkUrlError">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="requestor.${applicationId}"
+                    android:scheme="primer_ipay88" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name="com.ipay.IPayIHActivity"
             android:configChanges="orientation|screenSize"
-            android:exported="false"
-            tools:ignore="AppLinkUrlError" />
+            android:exported="false" />
 
         <activity
             android:name="com.ipay.IPayIHAcitivityR"
-            android:configChanges="orientation|screenSize" />
+            android:configChanges="orientation|screenSize"
+            android:exported="false" />
     </application>
-
 </manifest>

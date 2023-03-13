@@ -13,7 +13,6 @@ import io.primer.ipay88.internal.IPayPaymentState
 import io.primer.ipay88.internal.IPayStateHolder
 import io.primer.ipay88.internal.PrimerIPay88Delegate
 import io.primer.ipay88.internal.extension.toIPayIHPayment
-import io.primer.ipay88.internal.extension.toIPayIHR
 
 class NativeIPay88Activity : AppCompatActivity() {
 
@@ -41,16 +40,12 @@ class NativeIPay88Activity : AppCompatActivity() {
                         setErrorResult(
                             IPayPaymentFailedException(
                                 state.transId,
+                                state.tokenId,
                                 state.refNo,
-                                state.errorDescription
+                                state.errorDescription,
                             )
                         )
                         finish()
-                    }
-                    is IPayPaymentState.ReQuery -> {
-                        reQuery(
-                            intent.getSerializableExtra(INTENT_PARAMS_EXTRA_KEY) as IPay88LauncherParams
-                        )
                     }
                     is IPayPaymentState.Success -> {
                         setResult(RESULT_OK)
@@ -69,7 +64,28 @@ class NativeIPay88Activity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
-            startCheckout(getLauncherParams())
+            when {
+                // in case of a deeplink, we will rely on webhooks to provide us the result
+                intent.data != null -> {
+                    setResult(RESULT_OK)
+                    finish()
+                }
+                getLauncherParams() != null -> startCheckout(getLauncherParams()!!)
+                else -> {
+                    setCancelledResult(IPayPaymentCancelledException())
+                    finish()
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        // in case of a deeplink, we will rely on webhooks to provide us the result.
+        intent?.data?.let {
+            launcherIntent.unregister()
+            setResult(RESULT_OK)
+            finish()
         }
     }
 
@@ -84,18 +100,8 @@ class NativeIPay88Activity : AppCompatActivity() {
         )
     }
 
-    private fun reQuery(params: IPay88LauncherParams) {
-        launcherIntent.launch(
-            iPayIH.requery(
-                params.toIPayIHR(),
-                this,
-                PrimerIPay88Delegate(),
-            )
-        )
-    }
-
     private fun setErrorResult(exception: IllegalStateException) {
-        val errorCode = getLauncherParams().errorCode
+        val errorCode = getLauncherParams()!!.errorCode
         setResult(errorCode, Intent().apply { putExtra(ERROR_KEY, exception) })
     }
 
@@ -104,7 +110,7 @@ class NativeIPay88Activity : AppCompatActivity() {
     }
 
     private fun getLauncherParams() =
-        intent.getSerializableExtra(INTENT_PARAMS_EXTRA_KEY) as IPay88LauncherParams
+        intent.getSerializableExtra(INTENT_PARAMS_EXTRA_KEY) as? IPay88LauncherParams
 
     companion object {
 
