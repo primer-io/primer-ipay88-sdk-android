@@ -6,7 +6,7 @@ ext {
                     appCompat: "androidx.appcompat:appcompat:${Versions.appCompat}",
             ],
             iPay88 : [
-                    iPay88: "io.primer:ipay88:${Versions.iPay88Sdk}",
+                    iPay88: "io.primer:ipay88-my:${Versions.iPay88Sdk}",
             ],
     ]
 }

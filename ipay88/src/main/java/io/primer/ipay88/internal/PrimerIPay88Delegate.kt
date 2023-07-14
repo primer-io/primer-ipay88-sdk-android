@@ -1,6 +1,7 @@
 package io.primer.ipay88.internal
 
 import com.ipay.IPayIHResultDelegate
+import com.ipay.obj.MCTokenizationRet
 import java.io.Serializable
 
 internal class PrimerIPay88Delegate :
@@ -12,6 +13,7 @@ internal class PrimerIPay88Delegate :
         amount: String?,
         remark: String?,
         authCode: String?,
+        tokenizationRet: MCTokenizationRet?
     ) {
         IPayStateHolder.currentState = IPayPaymentState.Success
     }
@@ -22,8 +24,10 @@ internal class PrimerIPay88Delegate :
         amount: String?,
         remark: String?,
         errorDescription: String?,
+        tokenizationRet: MCTokenizationRet?
     ) {
-        IPayStateHolder.currentState = IPayPaymentState.Failed(transId, refNo, errorDescription)
+        IPayStateHolder.currentState =
+            IPayPaymentState.Failed(transId, tokenizationRet?.tokenId, refNo, errorDescription)
     }
 
     override fun onPaymentCanceled(
@@ -32,8 +36,9 @@ internal class PrimerIPay88Delegate :
         amount: String?,
         remark: String?,
         errorDescription: String?,
+        tokenizationRet: MCTokenizationRet?
     ) {
-        IPayStateHolder.currentState = IPayPaymentState.Cancelled(transId, errorDescription)
+        IPayStateHolder.currentState = IPayPaymentState.Cancelled(transId, refNo, errorDescription)
     }
 
     override fun onRequeryResult(
@@ -42,7 +47,7 @@ internal class PrimerIPay88Delegate :
         amount: String?,
         result: String?
     ) {
-        IPayStateHolder.currentState = IPayPaymentState.ReQuery
+        IPayStateHolder.currentState = IPayPaymentState.Success
     }
 
     override fun onConnectionError(
@@ -53,16 +58,24 @@ internal class PrimerIPay88Delegate :
         lang: String?,
         country: String?
     ) {
-        IPayStateHolder.currentState = IPayPaymentState.ConnectionError
+        IPayStateHolder.currentState = IPayPaymentState.ConnectionError(refNo)
     }
 }
 
 internal sealed class IPayPaymentState {
     object Success : IPayPaymentState()
-    data class Failed(val transId: String?, val refNo: String?, val errorDescription: String?) :
-        IPayPaymentState()
+    data class Failed(
+        val transId: String?,
+        val tokenId: String?,
+        val refNo: String?,
+        val errorDescription: String?
+    ) : IPayPaymentState()
 
-    data class Cancelled(val transId: String?, val errorDescription: String?) : IPayPaymentState()
-    object ReQuery : IPayPaymentState()
-    object ConnectionError : IPayPaymentState()
+    data class Cancelled(
+        val transId: String?,
+        val refNo: String?,
+        val errorDescription: String?
+    ) : IPayPaymentState()
+
+    data class ConnectionError(val refNo: String?) : IPayPaymentState()
 }
