@@ -22,8 +22,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
+                    android:pathPrefix="/ipay88"
                     android:host="requestor.${applicationId}"
-                    android:scheme="primer_ipay88" />
+                    android:scheme="primer" />
             </intent-filter>
         </activity>
 
