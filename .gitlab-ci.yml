@@ -1,0 +1,18 @@
+image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/fabernovel/android:api-31-gcloud-ndk-v1.7.0
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build-and-publish:
+  stage: build
+  variables:
+    PRIMER_ANDROID_ARTIFACTORY_DEPLOY_USERNAME: $ARTIFACTORY_DEPLOY_USERNAME
+    PRIMER_ANDROID_ARTIFACTORY_DEPLOY_PASSWORD: $ARTIFACTORY_DEPLOY_PASSWORD
+  script:
+    - mkdir ./.gradle/
+    - ./gradlew assembleRelease --stacktrace && ./gradlew artifactoryPublish
+  artifacts:
+    paths:
+      - primer-ipay88-sdk-android/ipay88/build/outputs/aar/
+  when: manual
