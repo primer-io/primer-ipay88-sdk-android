@@ -19,10 +19,10 @@ jobs:
     name: "Bump release version and create changelog"
     steps:
       - name: Check out repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.RELEASE_ACCESS_TOKEN }}
       - name: Install cz
         run: pip install --user -U Commitizen
       - name: Record from version
@@ -46,7 +46,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.RELEASE_ACCESS_TOKEN }}
           base: main
           branch: release/next
           delete-branch: true
