@@ -12,6 +12,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         mavenLocal()
+        maven {
+            setUrl(providers.gradleProperty("PRIMER_ANDROID_ARTIFACTORY_URL"))
+        }
     }
 }
 rootProject.name = "primer-ipay88-sdk-android"
