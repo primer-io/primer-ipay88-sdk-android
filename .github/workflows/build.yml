@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'corretto'
-          java-version: '17'
+          java-version: '11'
 
       - name: Build release version of the SDK
         run: ./gradlew clean assembleRelease
