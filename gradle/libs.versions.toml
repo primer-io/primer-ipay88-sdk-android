@@ -11,7 +11,7 @@ artifactory = "4.24.15"
 
 [libraries]
 android-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-ipay = { group = "io.primer", name = "ipay88-my", version.ref = "ipay88" }
+ipay88 = { group = "io.primer", name = "ipay88-my", version.ref = "ipay88" }
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
