@@ -1,2 +1,21 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        mavenLocal()
+        maven {
+            setUrl(providers.gradleProperty("PRIMER_ANDROID_ARTIFACTORY_URL"))
+        }
+    }
+}
 rootProject.name = "primer-ipay88-sdk-android"
 include ':ipay88'

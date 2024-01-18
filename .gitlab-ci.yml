@@ -1,4 +1,4 @@
-image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/fabernovel/android:api-31-gcloud-ndk-v1.7.0
+image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/fabernovel/android:api-33-gcloud-ndk-v1.8.0
 
 workflow:
   rules:

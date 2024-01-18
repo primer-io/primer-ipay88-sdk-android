@@ -1,6 +1,0 @@
-ext {
-    Versions = [
-            appCompat: "1.3.0",
-            iPay88Sdk   : "1.0.1"
-    ]
-}
