@@ -42,7 +42,7 @@ class NativeIPay88Activity : AppCompatActivity() {
                                 state.transId,
                                 state.tokenId,
                                 state.refNo,
-                                state.errorDescription,
+                                state.errorDescription
                             )
                         )
                         finish()
