@@ -4,14 +4,22 @@ workflow:
   rules:
     - if: $CI_COMMIT_TAG
 
-build-and-publish:
+build-and-publish-staging:
   stage: build
   variables:
-    PRIMER_ANDROID_ARTIFACTORY_DEPLOY_USERNAME: $ARTIFACTORY_DEPLOY_USERNAME
-    PRIMER_ANDROID_ARTIFACTORY_DEPLOY_PASSWORD: $ARTIFACTORY_DEPLOY_PASSWORD
+    ORG_GRADLE_PROJECT_mavenCentralUsername: $MAVEN_CENTRAL_USERNAME
+    ORG_GRADLE_PROJECT_mavenCentralPassword: $MAVEN_CENTRAL_PASSWORD
+    ORG_GRADLE_PROJECT_signingInMemoryKey: $SONARTYPE_GPG_EXPORTED
+    ORG_GRADLE_PROJECT_signingInMemoryKeyId: $SONATYPE_KEY_ID
+    ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: $SONATYPE_PASSWORD
   script:
     - mkdir ./.gradle/
-    - ./gradlew assembleRelease --stacktrace && ./gradlew artifactoryPublish
+    - echo nexusOptions.repositoryPassword=$NEXUS_PWD > ./.gradle/gradle.properties
+    - echo nexusOptions.repositoryUsername=primerapi >> ./.gradle/gradle.properties
+    - echo nexusOptions.stagingProfile=io.primer >> ./.gradle/gradle.properties
+    - ./gradlew publish --stacktrace
+  rules:
+      - if: $CI_COMMIT_TAG
   artifacts:
     paths:
       - primer-ipay88-sdk-android/ipay88/build/outputs/aar/
