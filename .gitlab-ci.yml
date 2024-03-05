@@ -18,10 +18,9 @@ build-and-publish:
     - echo nexusOptions.repositoryUsername=primerapi >> ./.gradle/gradle.properties
     - echo nexusOptions.stagingProfile=io.primer >> ./.gradle/gradle.properties
     - ./gradlew publish --stacktrace && ./gradlew closeAndReleaseRepository
-    - ls -R
   rules:
       - if: $CI_COMMIT_TAG
   artifacts:
     paths:
-      - primer-ipay88-sdk-android/ipay88/build/outputs/aar/
+      - ipay88/build/outputs/aar/
   when: manual
