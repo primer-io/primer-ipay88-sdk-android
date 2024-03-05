@@ -1,8 +1,8 @@
 plugins {
     alias libs.plugins.android.library
     alias libs.plugins.kotlin.android
-    alias libs.plugins.jfrog.artifactory
     alias libs.plugins.ktlint
+    alias libs.plugins.maven.publish
 }
 
 android {
@@ -40,5 +40,7 @@ android {
 
 dependencies {
     implementation libs.android.appcompat
-    implementation libs.ipay88
+    api libs.ipay88
 }
+
+apply from: "$rootDir/config/publish.gradle"
