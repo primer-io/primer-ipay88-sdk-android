@@ -39,8 +39,8 @@ android {
 }
 
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation libs.android.appcompat
-    api libs.ipay88
 }
 
 apply from: "$rootDir/config/publish.gradle"

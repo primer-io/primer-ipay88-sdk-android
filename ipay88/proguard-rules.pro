@@ -31,6 +31,8 @@
 # keep class BuildConfig
 -keep public class **.BuildConfig { *; }
 
+-keep class com.ipay.IPayIH { *; }
+
 -keep class io.primer.ipay88.api.** {
     public *;
 }
@@ -52,4 +54,9 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+-dontwarn com.androids.ipay.R$drawable
+-dontwarn com.androids.ipay.R$id
+-dontwarn com.androids.ipay.R$layout
+-dontwarn com.androids.ipay.R$string
 
