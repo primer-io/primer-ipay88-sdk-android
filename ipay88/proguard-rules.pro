@@ -54,9 +54,3 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
-
--dontwarn com.androids.ipay.R$drawable
--dontwarn com.androids.ipay.R$id
--dontwarn com.androids.ipay.R$layout
--dontwarn com.androids.ipay.R$string
-
