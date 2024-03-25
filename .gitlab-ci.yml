@@ -22,5 +22,5 @@ build-and-publish:
       - if: $CI_COMMIT_TAG
   artifacts:
     paths:
-      - ipay88/build/outputs/aar/
+      - ipay88/build/outputs/
   when: manual
