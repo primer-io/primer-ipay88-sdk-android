@@ -1,9 +1,157 @@
 image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/fabernovel/android:api-33-gcloud-ndk-v1.8.0
 
+variables:
+  GIT_DEPTH: 0
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+# Broadened from the previous tag-only gate so merge-request, default-branch and
+# manual (web) pipelines run. build-and-publish keeps its own tag-only rule.
 workflow:
   rules:
-    - if: $CI_COMMIT_TAG
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
+stages:
+  - analysis
+  - build
+  - release
+
+# Android build image is inherited from the top-level `image`.
+.gradle:
+  tags:
+    - xlarge
+  interruptible: true
+  variables:
+    GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+
+# Commitizen on a slim Python image, for the release jobs below.
+.cz:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:3.12-slim
+  tags:
+    - xlarge
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates
+    - pip install --no-cache-dir commitizen
+
+# Commits working-tree changes on a fresh branch and pushes with GitLab push
+# options that open an MR. Needs RELEASE_ACCESS_TOKEN (write_repository + api).
+.open-mr:
+  script:
+    - |
+      if [ -z "$(git status --porcelain)" ]; then
+        echo "Nothing to open an MR for."
+        exit 0
+      fi
+      git config user.email "ci@primer.io"
+      git config user.name "GitLab CI"
+      git checkout -B "$MR_BRANCH"
+      git add -A
+      git commit -m "$MR_COMMIT"
+      git push -f \
+        -o merge_request.create \
+        -o merge_request.target="$MR_TARGET" \
+        -o merge_request.title="$MR_TITLE" \
+        -o merge_request.description="$MR_DESCRIPTION" \
+        -o merge_request.remove_source_branch \
+        "https://oauth2:${RELEASE_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" \
+        "HEAD:$MR_BRANCH"
+
+# ---------------------------------------------------------------------------
+# build.yml + lint.yml — run on MRs and the default branch.
+# ---------------------------------------------------------------------------
+
+build:
+  extends: .gradle
+  stage: build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - ./gradlew clean assembleRelease
+
+lint:
+  extends: .gradle
+  stage: analysis
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - ./gradlew clean lint
+    - ./gradlew clean ktlintCheck
+
+# ---------------------------------------------------------------------------
+# release automation (create-release.yml + post-release-merge.yml).
+# DORMANT until this repo's flip: gated on $RELEASE_AUTOMATION_ENABLED == "true".
+# The tag from release-tag drives the existing build-and-publish (Maven Central).
+# ---------------------------------------------------------------------------
+
+release-bump:
+  extends: .cz
+  stage: release
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $RELEASE_TYPE && $CI_COMMIT_BRANCH == "main" && $RELEASE_AUTOMATION_ENABLED == "true"'
+  script:
+    - |
+      FROM_VERSION=$(cz version --project)
+      if [ "$RELEASE_TYPE" = "default" ]; then
+        cz bump --files-only --yes --changelog
+      else
+        cz bump --files-only --yes --changelog --prerelease "$RELEASE_TYPE"
+      fi
+      TO_VERSION=$(cz version --project)
+      export MR_BRANCH="release/next"
+      export MR_TARGET="main"
+      export MR_TITLE="Release ${TO_VERSION}"
+      export MR_COMMIT="bump: version ${FROM_VERSION} → ${TO_VERSION}"
+      export MR_DESCRIPTION="Bumped ${FROM_VERSION} -> ${TO_VERSION}"
+    - !reference [.open-mr, script]
+
+release-tag:
+  extends: .cz
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /^bump:/ && $RELEASE_AUTOMATION_ENABLED == "true"'
+  script:
+    - |
+      RELEASE_VERSION=$(cz version --project)
+      git config user.email "ci@primer.io"
+      git config user.name "GitLab CI"
+      git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
+      git push "https://oauth2:${RELEASE_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "refs/tags/${RELEASE_VERSION}"
+      sed -n "/## ${RELEASE_VERSION}/,/## [0-9]/p" CHANGELOG.md | sed '1d;$d' > release.md
+      echo "RELEASE_VERSION=${RELEASE_VERSION}" > release.env
+  artifacts:
+    paths:
+      - release.md
+    reports:
+      dotenv: release.env
+
+release-create:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /^bump:/ && $RELEASE_AUTOMATION_ENABLED == "true"'
+  needs:
+    - release-tag
+  script:
+    - |
+      release-cli create \
+        --name "Release ${RELEASE_VERSION}" \
+        --tag-name "${RELEASE_VERSION}" \
+        --description "$(cat release.md)"
+
+# ---------------------------------------------------------------------------
+# existing tag-only Maven Central publish (preserved verbatim)
+# ---------------------------------------------------------------------------
 build-and-publish:
   stage: build
   variables:
