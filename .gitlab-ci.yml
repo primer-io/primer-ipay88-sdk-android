@@ -122,11 +122,17 @@ release-tag:
   script:
     - |
       RELEASE_VERSION=$(cz version --project)
+      # Extract + validate release notes BEFORE the irreversible tag push, so an empty
+      # extraction fails the job without leaving an orphaned tag.
+      sed -n "/## ${RELEASE_VERSION}/,/## [0-9]/p" CHANGELOG.md | sed '1d;$d' > release.md
+      if [ ! -s release.md ]; then
+        echo "ERROR: could not extract release notes for ${RELEASE_VERSION} from CHANGELOG.md" >&2
+        exit 1
+      fi
       git config user.email "ci@primer.io"
       git config user.name "GitLab CI"
       git tag -a "$RELEASE_VERSION" -m "Release $RELEASE_VERSION"
       git push "https://oauth2:${RELEASE_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "refs/tags/${RELEASE_VERSION}"
-      sed -n "/## ${RELEASE_VERSION}/,/## [0-9]/p" CHANGELOG.md | sed '1d;$d' > release.md
       echo "RELEASE_VERSION=${RELEASE_VERSION}" > release.env
   artifacts:
     paths:
